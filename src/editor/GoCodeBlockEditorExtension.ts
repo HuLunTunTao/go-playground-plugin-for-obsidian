@@ -3,6 +3,7 @@ import { RangeSetBuilder } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
 import { MyPluginSettings } from "../settings";
+import { t } from "../i18n";
 import {
 	findCodeBlockByLineRange,
 	findCodeBlocksByLineRange,
@@ -106,7 +107,7 @@ class ToolbarWidget extends WidgetType {
 
 		const formatButton = document.createElement("button");
 		formatButton.type = "button";
-		formatButton.textContent = "Format";
+		formatButton.textContent = t("BUTTON_FORMAT");
 		formatButton.className = "go-playground-button";
 		formatButton.addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -116,7 +117,7 @@ class ToolbarWidget extends WidgetType {
 
 		const runButton = document.createElement("button");
 		runButton.type = "button";
-		runButton.textContent = "Run";
+		runButton.textContent = t("BUTTON_RUN");
 		runButton.className = "go-playground-button";
 		runButton.addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -126,7 +127,7 @@ class ToolbarWidget extends WidgetType {
 
 		const shareButton = document.createElement("button");
 		shareButton.type = "button";
-		shareButton.textContent = "Share";
+		shareButton.textContent = t("BUTTON_SHARE");
 		shareButton.className = "go-playground-button";
 		shareButton.addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -159,7 +160,7 @@ class ToolbarWidget extends WidgetType {
 				languageSet
 			);
 			if (!block) {
-				new Notice("No formattable Go code block found.");
+				new Notice(t("NOTICE_NO_FORMATTABLE_BLOCK"));
 				return;
 			}
 
@@ -178,7 +179,7 @@ class ToolbarWidget extends WidgetType {
 			updateCodeBlockLines(lines, block, response.Body);
 			replaceEditorContent(view, lines.join("\n"));
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Format failed.";
+			const message = error instanceof Error ? error.message : t("ERROR_FORMAT_FAILED");
 			new Notice(message);
 		} finally {
 			button.disabled = false;
@@ -203,7 +204,7 @@ class ToolbarWidget extends WidgetType {
 				languageSet
 			);
 			if (!block) {
-				new Notice("No runnable Go code block found.");
+				new Notice(t("NOTICE_NO_RUNNABLE_BLOCK"));
 				return;
 			}
 
@@ -221,7 +222,7 @@ class ToolbarWidget extends WidgetType {
 			);
 			replaceEditorContent(view, lines.join("\n"));
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Run failed.";
+			const message = error instanceof Error ? error.message : t("ERROR_RUN_FAILED");
 			new Notice(message);
 		} finally {
 			button.disabled = false;
@@ -246,7 +247,7 @@ class ToolbarWidget extends WidgetType {
 				languageSet
 			);
 			if (!block) {
-				new Notice("No shareable Go code block found.");
+				new Notice(t("NOTICE_NO_SHAREABLE_BLOCK"));
 				return;
 			}
 
@@ -256,16 +257,14 @@ class ToolbarWidget extends WidgetType {
 			const snippetId = await this.client.share(code);
 			const shareUrl = this.client.getShareUrl(snippetId.trim());
 			await copyToClipboard(shareUrl);
-			new Notice("Share link copied to clipboard.");
+			new Notice(t("NOTICE_SHARE_COPIED"));
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "Share failed.";
+			const message = error instanceof Error ? error.message : t("ERROR_SHARE_FAILED");
 			new Notice(message);
 		} finally {
 			button.disabled = false;
 		}
 	}
-
-
 
 	ignoreEvent(): boolean {
 		return false;

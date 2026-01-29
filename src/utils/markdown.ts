@@ -90,6 +90,17 @@ export function updateCodeBlockLines(
 	lines.splice(block.codeStartLine, block.codeEndLine - block.codeStartLine, ...newLines);
 }
 
+export function buildFencedCodeBlockText(
+	lines: string[],
+	block: CodeBlockLines
+): string {
+	const language = block.language?.trim() ?? "";
+	const code = lines
+		.slice(block.codeStartLine, block.codeEndLine)
+		.join("\n");
+	return `\`\`\`${language}\n${code}\n\`\`\``;
+}
+
 export function upsertRunResultBlockLines(
 	lines: string[],
 	block: CodeBlockLines,

@@ -137,6 +137,7 @@ class ToolbarWidget extends WidgetType {
 		toolbar.appendChild(formatButton);
 		toolbar.appendChild(runButton);
 		toolbar.appendChild(shareButton);
+		requestAnimationFrame(() => updateEditorToolbarOffset(toolbar, view));
 		return toolbar;
 	}
 
@@ -264,6 +265,8 @@ class ToolbarWidget extends WidgetType {
 		}
 	}
 
+
+
 	ignoreEvent(): boolean {
 		return false;
 	}
@@ -299,4 +302,38 @@ async function copyToClipboard(text: string): Promise<void> {
 	textarea.select();
 	document.execCommand("copy");
 	document.body.removeChild(textarea);
+}
+
+function updateEditorToolbarOffset(toolbar: HTMLElement, view: EditorView): void {
+	const baseRight = 8;
+	const gap = 6;
+	const lineEl = toolbar.closest(".cm-line") as HTMLElement | null;
+	const candidates = lineEl
+		? lineEl.querySelectorAll<HTMLElement>(
+				".code-block-flair, .code-block-language, .cm-codeblock-language, button[data-language]"
+			)
+		: view.dom.querySelectorAll<HTMLElement>(
+				".code-block-flair, .code-block-language, .cm-codeblock-language, button[data-language]"
+			);
+
+	let label: HTMLElement | null = null;
+	if (candidates.length === 1) {
+		label = candidates[0];
+	} else if (candidates.length > 1) {
+		const toolbarTop = toolbar.getBoundingClientRect().top;
+		let bestDiff = Number.POSITIVE_INFINITY;
+		candidates.forEach((el) => {
+			const diff = Math.abs(el.getBoundingClientRect().top - toolbarTop);
+			if (diff < bestDiff) {
+				bestDiff = diff;
+				label = el;
+			}
+		});
+	}
+
+	if (!label) return;
+	const width = label.getBoundingClientRect().width;
+	if (width > 0) {
+		toolbar.style.right = `${baseRight + width + gap}px`;
+	}
 }

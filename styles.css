@@ -36,6 +36,25 @@
 	cursor: default;
 }
 
+.go-playground-toolbar .go-playground-native-label {
+	margin-left: 6px;
+	padding: 2px 6px;
+}
+
+.go-playground-codeblock .copy-code-button.go-playground-native-copy {
+	position: absolute;
+	right: 8px;
+	top: 32px;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.15s ease;
+}
+
+.go-playground-codeblock:hover .copy-code-button.go-playground-native-copy {
+	opacity: 1;
+	pointer-events: auto;
+}
+
 .go-playground-run-result {
 	border: 1px solid var(--background-modifier-border);
 	border-radius: 8px;

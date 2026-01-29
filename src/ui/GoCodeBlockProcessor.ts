@@ -9,6 +9,7 @@ import {
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
 import { MyPluginSettings } from "../settings";
 import {
+	buildFencedCodeBlockText,
 	findCodeBlockByLineRange,
 	normalizeLanguage,
 	updateCodeBlockLines,
@@ -70,8 +71,9 @@ export class GoCodeBlockProcessor {
 			const section = ctx.getSectionInfo(pre);
 			if (!section) return;
 
-			const wrapper = document.createElement("div");
-			wrapper.className = "go-playground-codeblock";
+			const container = pre.parentElement;
+			if (!container) return;
+			container.classList.add("go-playground-codeblock");
 
 			const toolbar = this.createToolbar(
 				ctx.sourcePath,
@@ -80,9 +82,36 @@ export class GoCodeBlockProcessor {
 			);
 
 			pre.dataset.goPlaygroundDecorated = "true";
-			pre.parentElement?.insertBefore(wrapper, pre);
-			wrapper.appendChild(toolbar);
-			wrapper.appendChild(pre);
+
+			container.insertBefore(toolbar, pre);
+
+			const nativeLabel = findNativeLanguageLabel(container);
+			const copyButton = pre.querySelector<HTMLElement>(".copy-code-button");
+			if (copyButton) {
+				copyButton.classList.add("go-playground-native-copy");
+				copyButton.addEventListener("click", (event) => {
+					event.stopPropagation();
+				});
+			}
+
+			if (nativeLabel && nativeLabel.dataset.goPlaygroundCopy !== "true") {
+				nativeLabel.dataset.goPlaygroundCopy = "true";
+				nativeLabel.addEventListener("click", async (event) => {
+					event.preventDefault();
+					event.stopPropagation();
+					await this.handleCopy(ctx.sourcePath, section.lineStart, section.lineEnd);
+				});
+			}
+
+			if (nativeLabel) {
+				const updateOffset = () =>
+					requestAnimationFrame(() =>
+						updateToolbarOffset(toolbar, nativeLabel)
+					);
+				updateOffset();
+				container.addEventListener("mouseenter", updateOffset);
+				container.addEventListener("mouseleave", updateOffset);
+			}
 		});
 	}
 
@@ -307,6 +336,44 @@ export class GoCodeBlockProcessor {
 		}
 	}
 
+	private async handleCopy(
+		filePath: string,
+		lineStart: number,
+		lineEnd: number
+	): Promise<void> {
+		const file = this.getFile(filePath);
+		if (!file) {
+			new Notice("Cannot find current file.");
+			return;
+		}
+
+		try {
+			const content = await this.app.vault.read(file);
+			const lines = content.split("\n");
+			const settings = this.getSettings();
+			const languageSet = new Set(
+				settings.codeBlockLanguages.map((lang) => normalizeLanguage(lang))
+			);
+			const block = findCodeBlockByLineRange(
+				lines,
+				lineStart,
+				lineEnd,
+				languageSet
+			);
+			if (!block) {
+				new Notice("Cannot find a Go code block to copy.");
+				return;
+			}
+
+			const blockText = buildFencedCodeBlockText(lines, block);
+			await copyToClipboard(blockText);
+			new Notice("Code block copied.");
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Copy failed.";
+			new Notice(message);
+		}
+	}
+
 	private renderRunResult(source: string, el: HTMLElement): void {
 		const wrapper = el.createDiv({ cls: "go-playground-run-result" });
 		const pre = wrapper.createEl("pre");
@@ -345,4 +412,28 @@ async function copyToClipboard(text: string): Promise<void> {
 	textarea.select();
 	document.execCommand("copy");
 	document.body.removeChild(textarea);
+}
+
+function findNativeLanguageLabel(container: HTMLElement): HTMLElement | null {
+	const selectors = [
+		".code-block-flair",
+		".code-block-header__language",
+		".code-block-language",
+		".code-block-info",
+		"button[data-language]",
+	];
+
+	for (const selector of selectors) {
+		const el = container.querySelector<HTMLElement>(selector);
+		if (el) return el;
+	}
+	return null;
+}
+
+function updateToolbarOffset(toolbar: HTMLElement, label: HTMLElement): void {
+	const baseRight = 8;
+	const gap = 6;
+	const labelWidth = label.getBoundingClientRect().width;
+	const offset = labelWidth > 0 ? baseRight + labelWidth + gap : baseRight;
+	toolbar.style.right = `${offset}px`;
 }

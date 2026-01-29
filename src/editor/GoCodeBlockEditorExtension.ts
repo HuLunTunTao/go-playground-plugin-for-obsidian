@@ -318,7 +318,7 @@ function updateEditorToolbarOffset(toolbar: HTMLElement, view: EditorView): void
 
 	let label: HTMLElement | null = null;
 	if (candidates.length === 1) {
-		label = candidates[0];
+		label = candidates[0] ?? null;
 	} else if (candidates.length > 1) {
 		const toolbarTop = toolbar.getBoundingClientRect().top;
 		let bestDiff = Number.POSITIVE_INFINITY;

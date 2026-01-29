@@ -13,12 +13,12 @@ export function normalizeLanguage(language: string): string {
 	return language.trim().toLowerCase();
 }
 
-export function isFenceLine(line: string): boolean {
-	return FENCE_REGEX.test(line.trim());
+export function isFenceLine(line: string | undefined): boolean {
+	return typeof line === "string" && FENCE_REGEX.test(line.trim());
 }
 
-export function getFenceLanguage(line: string): string {
-	const match = line.trim().match(FENCE_LANG_REGEX);
+export function getFenceLanguage(line: string | undefined): string {
+	const match = typeof line === "string" ? line.trim().match(FENCE_LANG_REGEX) : null;
 	return match?.[1] ?? "";
 }
 
@@ -27,7 +27,7 @@ export function parseCodeBlocks(lines: string[]): CodeBlockLines[] {
 
 	for (let i = 0; i < lines.length; i++) {
 		const line = lines[i];
-		if (!line) continue;
+		if (line === undefined) continue;
 
 		const match = line.trim().match(FENCE_LANG_REGEX);
 		if (!match) continue;
@@ -86,7 +86,7 @@ export function updateCodeBlockLines(
 	block: CodeBlockLines,
 	newCode: string
 ): void {
-	const newLines = newCode.replace(/\r\n/g, "\n").split("\n");
+	const newLines = newCode.length > 0 ? newCode.replace(/\r\n/g, "\n").split("\n") : [];
 	lines.splice(block.codeStartLine, block.codeEndLine - block.codeStartLine, ...newLines);
 }
 
@@ -109,10 +109,10 @@ export function upsertRunResultBlockLines(
 ): void {
 	const normalizedResult = sanitizeResult(result);
 	const resultLines =
-		normalizedResult.length > 0 ? normalizedResult.split("\n") : [""];
+		normalizedResult.length > 0 ? normalizedResult.split("\n") : [];
 
 	let scanLine = block.endLine + 1;
-	while (scanLine < lines.length && lines[scanLine].trim() === "") {
+	while (scanLine < lines.length && lines[scanLine]?.trim() === "") {
 		scanLine++;
 	}
 
@@ -126,15 +126,17 @@ export function upsertRunResultBlockLines(
 		while (endFence < lines.length && !isFenceLine(lines[endFence])) {
 			endFence++;
 		}
-		if (endFence <= lines.length) {
+		if (endFence < lines.length) {
 			lines.splice(scanLine + 1, endFence - (scanLine + 1), ...resultLines);
+		} else {
+			lines.splice(scanLine + 1, lines.length - (scanLine + 1), ...resultLines, "```");
 		}
 		return;
 	}
 
 	const insertPos = block.endLine + 1;
 	const insertLines: string[] = [];
-	if (insertPos < lines.length && lines[insertPos].trim() !== "") {
+	if (insertPos < lines.length && lines[insertPos]?.trim() !== "") {
 		insertLines.push("");
 	}
 	insertLines.push(`\`\`\`${runResultLanguage}`, ...resultLines, "```");

@@ -5,6 +5,7 @@ import {
 	Notice,
 	TFile,
 	WorkspaceLeaf,
+	setIcon,
 } from "obsidian";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
 import { MyPluginSettings } from "../settings";
@@ -126,8 +127,9 @@ export class GoCodeBlockProcessor {
 
 		const formatButton = document.createElement("button");
 		formatButton.type = "button";
-		formatButton.textContent = t("BUTTON_FORMAT");
-		formatButton.className = "go-playground-button";
+		formatButton.className = "go-playground-button mod-format";
+		setIcon(formatButton, "code-2");
+		formatButton.insertAdjacentText("beforeend", t("BUTTON_FORMAT"));
 		formatButton.addEventListener("click", async (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -136,8 +138,9 @@ export class GoCodeBlockProcessor {
 
 		const runButton = document.createElement("button");
 		runButton.type = "button";
-		runButton.textContent = t("BUTTON_RUN");
-		runButton.className = "go-playground-button";
+		runButton.className = "go-playground-button mod-run";
+		setIcon(runButton, "play");
+		runButton.insertAdjacentText("beforeend", t("BUTTON_RUN"));
 		runButton.addEventListener("click", async (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -146,8 +149,9 @@ export class GoCodeBlockProcessor {
 
 		const shareButton = document.createElement("button");
 		shareButton.type = "button";
-		shareButton.textContent = t("BUTTON_SHARE");
-		shareButton.className = "go-playground-button";
+		shareButton.className = "go-playground-button mod-share";
+		setIcon(shareButton, "share-2");
+		shareButton.insertAdjacentText("beforeend", t("BUTTON_SHARE"));
 		shareButton.addEventListener("click", async (event) => {
 			event.preventDefault();
 			event.stopPropagation();

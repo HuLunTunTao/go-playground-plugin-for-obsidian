@@ -18,17 +18,50 @@
 .go-playground-toolbar.is-editor {
 	position: absolute;
 	right: 8px;
-	top: 2px;
+	top: var(--go-playground-editor-toolbar-top, 2px);
 }
 
 .go-playground-button {
 	background: var(--background-modifier-hover);
 	border: 1px solid var(--background-modifier-border);
-	border-radius: 6px;
+	border-radius: 999px;
 	color: var(--text-normal);
 	font-size: 12px;
-	padding: 2px 8px;
+	font-weight: 600;
+	padding: 3px 10px;
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.go-playground-button .svg-icon {
+	width: 14px;
+	height: 14px;
+}
+
+.go-playground-button.mod-format {
+	--go-playground-button-accent: var(--text-accent);
+}
+
+.go-playground-button.mod-run {
+	--go-playground-button-accent: var(--text-success, var(--text-accent));
+}
+
+.go-playground-button.mod-share {
+	--go-playground-button-accent: var(--text-muted);
+}
+
+.go-playground-button.mod-format,
+.go-playground-button.mod-run,
+.go-playground-button.mod-share {
+	color: var(--go-playground-button-accent, var(--text-normal));
+	border-color: var(--go-playground-button-accent, var(--background-modifier-border));
+}
+
+.go-playground-button:hover:not(:disabled) {
+	background: var(--background-modifier-border);
 }
 
 .go-playground-button:disabled {

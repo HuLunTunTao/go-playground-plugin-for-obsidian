@@ -1,4 +1,4 @@
-import { Notice } from "obsidian";
+import { Notice, setIcon } from "obsidian";
 import { RangeSetBuilder } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
@@ -13,6 +13,8 @@ import {
 } from "../utils/markdown";
 
 type SettingsGetter = () => MyPluginSettings;
+
+const EDITOR_TOOLBAR_TOP_OFFSET = 2;
 
 export function createGoCodeBlockEditorExtension(
 	client: GoPlaygroundClient,
@@ -104,11 +106,16 @@ class ToolbarWidget extends WidgetType {
 		const toolbar = document.createElement("span");
 		toolbar.className = "go-playground-toolbar is-editor";
 		toolbar.setAttribute("contenteditable", "false");
+		toolbar.style.setProperty(
+			"--go-playground-editor-toolbar-top",
+			`${EDITOR_TOOLBAR_TOP_OFFSET}px`
+		);
 
 		const formatButton = document.createElement("button");
 		formatButton.type = "button";
-		formatButton.textContent = t("BUTTON_FORMAT");
-		formatButton.className = "go-playground-button";
+		formatButton.className = "go-playground-button mod-format";
+		setIcon(formatButton, "code-2");
+		formatButton.insertAdjacentText("beforeend", t("BUTTON_FORMAT"));
 		formatButton.addEventListener("click", async (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -117,8 +124,9 @@ class ToolbarWidget extends WidgetType {
 
 		const runButton = document.createElement("button");
 		runButton.type = "button";
-		runButton.textContent = t("BUTTON_RUN");
-		runButton.className = "go-playground-button";
+		runButton.className = "go-playground-button mod-run";
+		setIcon(runButton, "play");
+		runButton.insertAdjacentText("beforeend", t("BUTTON_RUN"));
 		runButton.addEventListener("click", async (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -127,8 +135,9 @@ class ToolbarWidget extends WidgetType {
 
 		const shareButton = document.createElement("button");
 		shareButton.type = "button";
-		shareButton.textContent = t("BUTTON_SHARE");
-		shareButton.className = "go-playground-button";
+		shareButton.className = "go-playground-button mod-share";
+		setIcon(shareButton, "share-2");
+		shareButton.insertAdjacentText("beforeend", t("BUTTON_SHARE"));
 		shareButton.addEventListener("click", async (event) => {
 			event.preventDefault();
 			event.stopPropagation();

@@ -1,6 +1,7 @@
 import { App, Editor, Modal, Notice } from "obsidian";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
 import { MyPluginSettings } from "../settings";
+import { t } from "../i18n";
 
 type SettingsGetter = () => MyPluginSettings;
 
@@ -30,22 +31,22 @@ export class ShareInsertModal extends Modal {
 	onOpen(): void {
 		const { contentEl } = this;
 		contentEl.empty();
-		this.setTitle("插入 Go Playground 代码");
+		this.setTitle(t("MODAL_TITLE"));
 
 		const input = contentEl.createEl("input", {
 			type: "text",
-			placeholder: "输入分享链接或 snippet id",
+			placeholder: t("MODAL_INPUT_PLACEHOLDER"),
 		});
 		input.addClass("go-playground-input");
 
 		const actions = contentEl.createDiv({ cls: "go-playground-modal-actions" });
 		const submitButton = actions.createEl("button", {
-			text: "确定",
+			text: t("BUTTON_CONFIRM"),
 		});
 		submitButton.type = "button";
 
 		const cancelButton = actions.createEl("button", {
-			text: "取消",
+			text: t("BUTTON_CANCEL"),
 		});
 		cancelButton.type = "button";
 
@@ -58,7 +59,7 @@ export class ShareInsertModal extends Modal {
 			try {
 				const snippetId = extractSnippetId(value);
 				if (!snippetId) {
-					new Notice("无法解析 snippet id。");
+					new Notice(t("NOTICE_ID_PARSE_ERROR"));
 					return;
 				}
 
@@ -71,7 +72,7 @@ export class ShareInsertModal extends Modal {
 				this.close();
 			} catch (error) {
 				const message =
-					error instanceof Error ? error.message : "插入失败。";
+					error instanceof Error ? error.message : t("NOTICE_INSERT_ERROR");
 				new Notice(message);
 			} finally {
 				submitButton.disabled = false;

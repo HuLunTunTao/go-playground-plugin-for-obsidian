@@ -15,6 +15,7 @@ import {
 	updateCodeBlockLines,
 	upsertRunResultBlockLines,
 } from "../utils/markdown";
+import { t } from "../i18n";
 
 type SettingsGetter = () => MyPluginSettings;
 
@@ -125,7 +126,7 @@ export class GoCodeBlockProcessor {
 
 		const formatButton = document.createElement("button");
 		formatButton.type = "button";
-		formatButton.textContent = "Format";
+		formatButton.textContent = t("BUTTON_FORMAT");
 		formatButton.className = "go-playground-button";
 		formatButton.addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -135,7 +136,7 @@ export class GoCodeBlockProcessor {
 
 		const runButton = document.createElement("button");
 		runButton.type = "button";
-		runButton.textContent = "Run";
+		runButton.textContent = t("BUTTON_RUN");
 		runButton.className = "go-playground-button";
 		runButton.addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -145,7 +146,7 @@ export class GoCodeBlockProcessor {
 
 		const shareButton = document.createElement("button");
 		shareButton.type = "button";
-		shareButton.textContent = "Share";
+		shareButton.textContent = t("BUTTON_SHARE");
 		shareButton.className = "go-playground-button";
 		shareButton.addEventListener("click", async (event) => {
 			event.preventDefault();

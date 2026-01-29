@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
 import MyPlugin from "./main";
+import { t } from "./i18n";
 
 export interface MyPluginSettings {
 	go_playground_base_url: string;
@@ -31,8 +32,8 @@ export class SampleSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName("Go Playground base URL")
-			.setDesc("Base URL for Go Playground.")
+			.setName(t("SETTING_URL_NAME"))
+			.setDesc(t("SETTING_URL_DESC"))
 			.addText((text) =>
 				text
 					.setPlaceholder("https://play.golang.org")
@@ -44,8 +45,8 @@ export class SampleSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Request timeout")
-			.setDesc("Maximum wait time in milliseconds.")
+			.setName(t("SETTING_TIMEOUT_NAME"))
+			.setDesc(t("SETTING_TIMEOUT_DESC"))
 			.addText((text) =>
 				text
 					.setPlaceholder("10000")
@@ -60,8 +61,8 @@ export class SampleSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Code block languages")
-			.setDesc("Comma-separated list. Case-insensitive. Example: go, golang.")
+			.setName(t("SETTING_LANGS_NAME"))
+			.setDesc(t("SETTING_LANGS_DESC"))
 			.addText((text) =>
 				text
 					.setPlaceholder("go, golang")
@@ -76,8 +77,8 @@ export class SampleSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Run result code block language")
-			.setDesc("Used to persist outputs. Requires reload after change.")
+			.setName(t("SETTING_RESULT_LANG_NAME"))
+			.setDesc(t("SETTING_RESULT_LANG_DESC"))
 			.addText((text) =>
 				text
 					.setPlaceholder("golang-run-result")
@@ -89,8 +90,8 @@ export class SampleSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Format: fix imports")
-			.setDesc("Run gofmt with import fixes.")
+			.setName(t("SETTING_FIX_IMPORTS_NAME"))
+			.setDesc(t("SETTING_FIX_IMPORTS_DESC"))
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.formatFixImports)

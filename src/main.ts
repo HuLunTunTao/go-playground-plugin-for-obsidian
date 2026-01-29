@@ -4,6 +4,7 @@ import { GoPlaygroundClient } from "./playground/GoPlaygroundClient";
 import { GoCodeBlockProcessor } from "./ui/GoCodeBlockProcessor";
 import { createGoCodeBlockEditorExtension } from "./editor/GoCodeBlockEditorExtension";
 import { ShareInsertModal } from "./ui/ShareInsertModal";
+import { t } from "./i18n";
 
 export default class GoPlaygroundPlugin extends Plugin {
 	settings: MyPluginSettings;
@@ -38,7 +39,7 @@ export default class GoPlaygroundPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("editor-menu", (menu, editor) => {
 				menu.addItem((item) => {
-					item.setTitle("Insert Go Playground snippet").onClick(() => {
+					item.setTitle(t("MENU_INSERT_SNIPPET")).onClick(() => {
 						new ShareInsertModal(
 							this.app,
 							editor,
@@ -75,7 +76,7 @@ export default class GoPlaygroundPlugin extends Plugin {
 	private startInsert(): boolean {
 		const now = Date.now();
 		if (this.insertLock || now - this.lastInsertAt < 500) {
-			new Notice("操作过快，请稍后再试。");
+			new Notice(t("NOTICE_TOO_FAST"));
 			return false;
 		}
 		this.insertLock = true;

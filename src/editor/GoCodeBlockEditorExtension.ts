@@ -88,6 +88,8 @@ class ToolbarWidget extends WidgetType {
 	private getSettings: SettingsGetter;
 	private startLine: number;
 	private endLine: number;
+	private offsetObserver?: MutationObserver;
+	private offsetResizeObserver?: ResizeObserver;
 
 	constructor(
 		client: GoPlaygroundClient,
@@ -147,7 +149,25 @@ class ToolbarWidget extends WidgetType {
 		toolbar.appendChild(formatButton);
 		toolbar.appendChild(runButton);
 		toolbar.appendChild(shareButton);
-		requestAnimationFrame(() => updateEditorToolbarOffset(toolbar, view));
+		requestAnimationFrame(() => {
+			updateEditorToolbarOffset(toolbar, view);
+			const lineEl = toolbar.closest(".cm-line") as HTMLElement | null;
+			if (!lineEl) return;
+			this.offsetObserver = new MutationObserver(() =>
+				updateEditorToolbarOffset(toolbar, view)
+			);
+			this.offsetObserver.observe(lineEl, {
+				childList: true,
+				subtree: true,
+				attributes: true,
+			});
+			if (typeof ResizeObserver !== "undefined") {
+				this.offsetResizeObserver = new ResizeObserver(() =>
+					updateEditorToolbarOffset(toolbar, view)
+				);
+				this.offsetResizeObserver.observe(lineEl);
+			}
+		});
 		return toolbar;
 	}
 
@@ -277,6 +297,11 @@ class ToolbarWidget extends WidgetType {
 
 	ignoreEvent(): boolean {
 		return false;
+	}
+
+	destroy(): void {
+		this.offsetObserver?.disconnect();
+		this.offsetResizeObserver?.disconnect();
 	}
 }
 

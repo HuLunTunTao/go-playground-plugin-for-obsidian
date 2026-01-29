@@ -1,13 +1,16 @@
-import { Plugin } from "obsidian";
+import { Notice, Plugin } from "obsidian";
 import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
 import { GoPlaygroundClient } from "./playground/GoPlaygroundClient";
 import { GoCodeBlockProcessor } from "./ui/GoCodeBlockProcessor";
 import { createGoCodeBlockEditorExtension } from "./editor/GoCodeBlockEditorExtension";
+import { ShareInsertModal } from "./ui/ShareInsertModal";
 
 export default class GoPlaygroundPlugin extends Plugin {
 	settings: MyPluginSettings;
 	client: GoPlaygroundClient;
 	processor: GoCodeBlockProcessor;
+	private insertLock = false;
+	private lastInsertAt = 0;
 
 	async onload() {
 		await this.loadSettings();
@@ -32,6 +35,23 @@ export default class GoPlaygroundPlugin extends Plugin {
 			createGoCodeBlockEditorExtension(this.client, () => this.settings)
 		);
 
+		this.registerEvent(
+			this.app.workspace.on("editor-menu", (menu, editor) => {
+				menu.addItem((item) => {
+					item.setTitle("Insert Go Playground snippet").onClick(() => {
+						new ShareInsertModal(
+							this.app,
+							editor,
+							this.client,
+							() => this.settings,
+							() => this.startInsert(),
+							() => this.endInsert()
+						).open();
+					});
+				});
+			})
+		);
+
 		this.addSettingTab(new SampleSettingTab(this.app, this));
 
 	}
@@ -50,5 +70,20 @@ export default class GoPlaygroundPlugin extends Plugin {
 			this.settings.go_playground_base_url,
 			this.settings.go_playground_timeout
 		);
+	}
+
+	private startInsert(): boolean {
+		const now = Date.now();
+		if (this.insertLock || now - this.lastInsertAt < 500) {
+			new Notice("操作过快，请稍后再试。");
+			return false;
+		}
+		this.insertLock = true;
+		this.lastInsertAt = now;
+		return true;
+	}
+
+	private endInsert(): void {
+		this.insertLock = false;
 	}
 }

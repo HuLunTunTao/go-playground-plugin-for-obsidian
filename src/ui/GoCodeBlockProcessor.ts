@@ -114,8 +114,19 @@ export class GoCodeBlockProcessor {
 			await this.handleRun(filePath, lineStart, lineEnd, runButton);
 		});
 
+		const shareButton = document.createElement("button");
+		shareButton.type = "button";
+		shareButton.textContent = "Share";
+		shareButton.className = "go-playground-button";
+		shareButton.addEventListener("click", async (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			await this.handleShare(filePath, lineStart, lineEnd, shareButton);
+		});
+
 		toolbar.appendChild(formatButton);
 		toolbar.appendChild(runButton);
+		toolbar.appendChild(shareButton);
 		return toolbar;
 	}
 
@@ -250,6 +261,52 @@ export class GoCodeBlockProcessor {
 		}
 	}
 
+	private async handleShare(
+		filePath: string,
+		lineStart: number,
+		lineEnd: number,
+		button: HTMLButtonElement
+	): Promise<void> {
+		const file = this.getFile(filePath);
+		if (!file) {
+			new Notice("Cannot find current file.");
+			return;
+		}
+
+		button.disabled = true;
+		try {
+			const content = await this.app.vault.read(file);
+			const lines = content.split("\n");
+			const settings = this.getSettings();
+			const languageSet = new Set(
+				settings.codeBlockLanguages.map((lang) => normalizeLanguage(lang))
+			);
+			const block = findCodeBlockByLineRange(
+				lines,
+				lineStart,
+				lineEnd,
+				languageSet
+			);
+			if (!block) {
+				new Notice("Cannot find a Go code block to share.");
+				return;
+			}
+
+			const code = lines
+				.slice(block.codeStartLine, block.codeEndLine)
+				.join("\n");
+			const snippetId = await this.client.share(code);
+			const shareUrl = this.client.getShareUrl(snippetId.trim());
+			await copyToClipboard(shareUrl);
+			new Notice("Share link copied to clipboard.");
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Share failed.";
+			new Notice(message);
+		} finally {
+			button.disabled = false;
+		}
+	}
+
 	private renderRunResult(source: string, el: HTMLElement): void {
 		const wrapper = el.createDiv({ cls: "go-playground-run-result" });
 		const pre = wrapper.createEl("pre");
@@ -272,4 +329,20 @@ export class GoCodeBlockProcessor {
 		}
 		return null;
 	}
+}
+
+async function copyToClipboard(text: string): Promise<void> {
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		await navigator.clipboard.writeText(text);
+		return;
+	}
+	const textarea = document.createElement("textarea");
+	textarea.value = text;
+	textarea.style.position = "fixed";
+	textarea.style.opacity = "0";
+	document.body.appendChild(textarea);
+	textarea.focus();
+	textarea.select();
+	document.execCommand("copy");
+	document.body.removeChild(textarea);
 }

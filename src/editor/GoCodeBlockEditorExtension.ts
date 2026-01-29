@@ -124,8 +124,19 @@ class ToolbarWidget extends WidgetType {
 			await this.handleRun(view, runButton);
 		});
 
+		const shareButton = document.createElement("button");
+		shareButton.type = "button";
+		shareButton.textContent = "Share";
+		shareButton.className = "go-playground-button";
+		shareButton.addEventListener("click", async (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+			await this.handleShare(view, shareButton);
+		});
+
 		toolbar.appendChild(formatButton);
 		toolbar.appendChild(runButton);
+		toolbar.appendChild(shareButton);
 		return toolbar;
 	}
 
@@ -216,6 +227,43 @@ class ToolbarWidget extends WidgetType {
 		}
 	}
 
+	private async handleShare(
+		view: EditorView,
+		button: HTMLButtonElement
+	): Promise<void> {
+		button.disabled = true;
+		try {
+			const lines = view.state.doc.toString().split("\n");
+			const settings = this.getSettings();
+			const languageSet = new Set(
+				settings.codeBlockLanguages.map((lang) => normalizeLanguage(lang))
+			);
+			const block = findCodeBlockByLineRange(
+				lines,
+				this.startLine,
+				this.endLine,
+				languageSet
+			);
+			if (!block) {
+				new Notice("No shareable Go code block found.");
+				return;
+			}
+
+			const code = lines
+				.slice(block.codeStartLine, block.codeEndLine)
+				.join("\n");
+			const snippetId = await this.client.share(code);
+			const shareUrl = this.client.getShareUrl(snippetId.trim());
+			await copyToClipboard(shareUrl);
+			new Notice("Share link copied to clipboard.");
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Share failed.";
+			new Notice(message);
+		} finally {
+			button.disabled = false;
+		}
+	}
+
 	ignoreEvent(): boolean {
 		return false;
 	}
@@ -235,4 +283,20 @@ function replaceEditorContent(view: EditorView, content: string): void {
 		view.scrollDOM.scrollTop = scrollTop;
 		view.scrollDOM.scrollLeft = scrollLeft;
 	});
+}
+
+async function copyToClipboard(text: string): Promise<void> {
+	if (navigator.clipboard && navigator.clipboard.writeText) {
+		await navigator.clipboard.writeText(text);
+		return;
+	}
+	const textarea = document.createElement("textarea");
+	textarea.value = text;
+	textarea.style.position = "fixed";
+	textarea.style.opacity = "0";
+	document.body.appendChild(textarea);
+	textarea.focus();
+	textarea.select();
+	document.execCommand("copy");
+	document.body.removeChild(textarea);
 }

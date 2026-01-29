@@ -44,6 +44,10 @@ export class GoPlaygroundClient {
 		this.timeout = timeout;
 	}
 
+	getShareUrl(snippetId: string): string {
+		return `${this.baseUrl}/p/${snippetId}`;
+	}
+
 	/**
 	 * Execute Go code on the playground (legacy method, uses compile internally)
 	 * @param code Go source code

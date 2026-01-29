@@ -52,3 +52,14 @@
 .go-playground-editor .cm-line {
 	position: relative;
 }
+
+.go-playground-input {
+	width: 100%;
+	margin-top: 8px;
+}
+
+.go-playground-modal-actions {
+	display: flex;
+	gap: 8px;
+	margin-top: 12px;
+}

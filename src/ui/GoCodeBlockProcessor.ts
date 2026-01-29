@@ -134,6 +134,9 @@ export class GoCodeBlockProcessor {
 		button.disabled = true;
 		const previewLeaf = this.getMarkdownLeafForPath(filePath);
 		const wasPreview = previewLeaf?.view.getMode() === "preview";
+		const previewScroll = wasPreview
+			? previewLeaf?.view.previewMode.getScroll()
+			: null;
 		try {
 			const content = await this.app.vault.read(file);
 			const lines = content.split("\n");
@@ -167,7 +170,12 @@ export class GoCodeBlockProcessor {
 			updateCodeBlockLines(lines, block, response.Body);
 			await this.app.vault.modify(file, lines.join("\n"));
 			if (wasPreview) {
-				previewLeaf?.view.previewMode.rerender(true);
+				previewLeaf?.view.previewMode.rerender();
+				if (previewScroll !== null && previewScroll !== undefined) {
+					requestAnimationFrame(() =>
+						previewLeaf?.view.previewMode.applyScroll(previewScroll)
+					);
+				}
 			}
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Format failed.";
@@ -192,6 +200,9 @@ export class GoCodeBlockProcessor {
 		button.disabled = true;
 		const previewLeaf = this.getMarkdownLeafForPath(filePath);
 		const wasPreview = previewLeaf?.view.getMode() === "preview";
+		const previewScroll = wasPreview
+			? previewLeaf?.view.previewMode.getScroll()
+			: null;
 		try {
 			const content = await this.app.vault.read(file);
 			const lines = content.split("\n");
@@ -224,7 +235,12 @@ export class GoCodeBlockProcessor {
 			);
 			await this.app.vault.modify(file, lines.join("\n"));
 			if (wasPreview) {
-				previewLeaf?.view.previewMode.rerender(true);
+				previewLeaf?.view.previewMode.rerender();
+				if (previewScroll !== null && previewScroll !== undefined) {
+					requestAnimationFrame(() =>
+						previewLeaf?.view.previewMode.applyScroll(previewScroll)
+					);
+				}
 			}
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Run failed.";

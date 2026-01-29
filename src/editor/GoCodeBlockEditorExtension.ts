@@ -222,11 +222,17 @@ class ToolbarWidget extends WidgetType {
 }
 
 function replaceEditorContent(view: EditorView, content: string): void {
+	const scrollTop = view.scrollDOM.scrollTop;
+	const scrollLeft = view.scrollDOM.scrollLeft;
 	view.dispatch({
 		changes: {
 			from: 0,
 			to: view.state.doc.length,
 			insert: content,
 		},
+	});
+	requestAnimationFrame(() => {
+		view.scrollDOM.scrollTop = scrollTop;
+		view.scrollDOM.scrollLeft = scrollLeft;
 	});
 }

@@ -1,17 +1,21 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
+import { App, PluginSettingTab, Setting } from "obsidian";
 import MyPlugin from "./main";
 
 export interface MyPluginSettings {
-	mySetting: string;
 	go_playground_base_url: string;
 	go_playground_timeout: number;
+	codeBlockLanguages: string[];
+	runResultLanguage: string;
+	formatFixImports: boolean;
 }
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
-	mySetting: 'default',
-	go_playground_base_url: 'https://play.golang.org',
-	go_playground_timeout: 10000
-}
+	go_playground_base_url: "https://play.golang.org",
+	go_playground_timeout: 10000,
+	codeBlockLanguages: ["go", "golang"],
+	runResultLanguage: "golang-run-result",
+	formatFixImports: true,
+};
 
 export class SampleSettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
@@ -27,39 +31,73 @@ export class SampleSettingTab extends PluginSettingTab {
 		containerEl.empty();
 
 		new Setting(containerEl)
-			.setName('Settings #1')
-			.setDesc('It\'s a secret')
-			.addText(text => text
-				.setPlaceholder('Enter your secret')
-				.setValue(this.plugin.settings.mySetting)
-				.onChange(async (value) => {
-					this.plugin.settings.mySetting = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Go Playground Base URL')
-			.setDesc('Base URL for Go Playground')
-			.addText(text => text
-				.setPlaceholder('Enter Go Playground Base URL')
-				.setValue(this.plugin.settings.go_playground_base_url)
-				.onChange(async (value) => {
-					this.plugin.settings.go_playground_base_url = value;
-					await this.plugin.saveSettings();
-				}));
-
-		new Setting(containerEl)
-			.setName('Request Timeout')
-			.setDesc('Maximum wait time in milliseconds (official Go Playground typically supports up to 10-20 seconds, but you can set longer for third-party playgrounds)')
-			.addText(text => text
-				.setPlaceholder('10000')
-				.setValue(String(this.plugin.settings.go_playground_timeout))
-				.onChange(async (value) => {
-					const timeout = parseInt(value);
-					if (!isNaN(timeout) && timeout > 0) {
-						this.plugin.settings.go_playground_timeout = timeout;
+			.setName("Go Playground base URL")
+			.setDesc("Base URL for Go Playground.")
+			.addText((text) =>
+				text
+					.setPlaceholder("https://play.golang.org")
+					.setValue(this.plugin.settings.go_playground_base_url)
+					.onChange(async (value) => {
+						this.plugin.settings.go_playground_base_url = value.trim();
 						await this.plugin.saveSettings();
-					}
-				}));
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Request timeout")
+			.setDesc("Maximum wait time in milliseconds.")
+			.addText((text) =>
+				text
+					.setPlaceholder("10000")
+					.setValue(String(this.plugin.settings.go_playground_timeout))
+					.onChange(async (value) => {
+						const timeout = Number.parseInt(value, 10);
+						if (!Number.isNaN(timeout) && timeout > 0) {
+							this.plugin.settings.go_playground_timeout = timeout;
+							await this.plugin.saveSettings();
+						}
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Code block languages")
+			.setDesc("Comma-separated list. Case-insensitive. Example: go, golang.")
+			.addText((text) =>
+				text
+					.setPlaceholder("go, golang")
+					.setValue(this.plugin.settings.codeBlockLanguages.join(", "))
+					.onChange(async (value) => {
+						this.plugin.settings.codeBlockLanguages = value
+							.split(",")
+							.map((item) => item.trim())
+							.filter((item) => item.length > 0);
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Run result code block language")
+			.setDesc("Used to persist outputs. Requires reload after change.")
+			.addText((text) =>
+				text
+					.setPlaceholder("golang-run-result")
+					.setValue(this.plugin.settings.runResultLanguage)
+					.onChange(async (value) => {
+						this.plugin.settings.runResultLanguage = value.trim();
+						await this.plugin.saveSettings();
+					})
+			);
+
+		new Setting(containerEl)
+			.setName("Format: fix imports")
+			.setDesc("Run gofmt with import fixes.")
+			.addToggle((toggle) =>
+				toggle
+					.setValue(this.plugin.settings.formatFixImports)
+					.onChange(async (value) => {
+						this.plugin.settings.formatFixImports = value;
+						await this.plugin.saveSettings();
+					})
+			);
 	}
 }

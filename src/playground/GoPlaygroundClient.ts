@@ -39,6 +39,11 @@ export class GoPlaygroundClient {
 		this.timeout = timeout;
 	}
 
+	updateConfig(baseUrl: string, timeout: number): void {
+		this.baseUrl = baseUrl.replace(/\/$/, "");
+		this.timeout = timeout;
+	}
+
 	/**
 	 * Execute Go code on the playground (legacy method, uses compile internally)
 	 * @param code Go source code

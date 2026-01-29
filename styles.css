@@ -1,8 +1,54 @@
-/*
+.go-playground-codeblock {
+	position: relative;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+.go-playground-codeblock pre {
+	padding-top: 2.2em;
+}
 
-If your plugin does not need CSS, delete this file.
+.go-playground-toolbar {
+	position: absolute;
+	top: 6px;
+	right: 8px;
+	display: flex;
+	gap: 6px;
+	z-index: 2;
+}
 
-*/
+.go-playground-toolbar.is-editor {
+	position: absolute;
+	right: 8px;
+	top: 2px;
+}
+
+.go-playground-button {
+	background: var(--background-modifier-hover);
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 6px;
+	color: var(--text-normal);
+	font-size: 12px;
+	padding: 2px 8px;
+	cursor: pointer;
+}
+
+.go-playground-button:disabled {
+	opacity: 0.6;
+	cursor: default;
+}
+
+.go-playground-run-result {
+	border: 1px solid var(--background-modifier-border);
+	border-radius: 8px;
+	margin-top: 8px;
+	background: var(--background-primary-alt);
+}
+
+.go-playground-run-result pre {
+	margin: 0;
+	padding: 8px 12px;
+	white-space: pre-wrap;
+}
+
+.go-playground-editor .cm-line {
+	position: relative;
+}

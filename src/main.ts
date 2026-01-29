@@ -1,10 +1,12 @@
 import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
 import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import {GoPlaygroundClient} from "./playground/GoPlaygroundClient";
 
 // Remember to rename these classes and interfaces!
 
 export default class MyPlugin extends Plugin {
 	settings: MyPluginSettings;
+	client: GoPlaygroundClient;
 
 	async onload() {
 		await this.loadSettings();
@@ -72,6 +74,38 @@ export default class MyPlugin extends Plugin {
 			new Notice('Hello, world');
 		});
 
+		this.registerMarkdownCodeBlockProcessor('csv', (source, el, ctx) => {
+		const rows = source.split('\n').filter((row) => row.length > 0);
+
+		const table = el.createEl('table');
+		const body = table.createEl('tbody');
+
+		for (let i = 0; i < rows.length; i++) {
+			const rowText = rows[i];
+			if (!rowText) continue;
+			const cols = rowText.split(',');
+
+			const row = body.createEl('tr');
+
+			for (let j = 0; j < cols.length; j++) {
+			row.createEl('td', { text: cols[j] });
+			}
+		}
+		});
+
+		testGet();
+
+		// Initialize Go Playground client
+		this.client = new GoPlaygroundClient(
+			this.settings.go_playground_base_url,
+			this.settings.go_playground_timeout
+		);
+
+		// Test Go Playground client
+		this.testGoPlayground();
+
+		console.log('Go Playground Plugin loaded');
+
 	}
 
 	onunload() {
@@ -83,6 +117,70 @@ export default class MyPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	async testGoPlayground() {
+		try {
+			const testCode = `package main
+
+import "fmt"
+
+func main() {
+	fmt.Println("Hello from Go Playground!")
+	fmt.Println("Testing Obsidian Plugin")
+}`;
+
+			console.log('=== Testing Go Playground Client ===');
+			
+			// Test 1: Compile and execute
+			console.log('\n1. Testing compile()...');
+			const compileResponse = await this.client.compile(testCode, false);
+			console.log('Compile Response:', compileResponse);
+			if (this.client.hasErrors(compileResponse)) {
+				console.error('Compilation errors:', compileResponse.Errors);
+			} else {
+				const output = this.client.getOutput(compileResponse);
+				console.log('Program output:', output);
+			}
+
+			// Test 2: Share code
+			console.log('\n2. Testing share()...');
+			const snippetId = await this.client.share(testCode);
+			console.log('Snippet ID:', snippetId);
+
+			// Test 3: View shared code
+			console.log('\n3. Testing view()...');
+			const viewedCode = await this.client.view(snippetId);
+			console.log('Viewed code:', viewedCode);
+
+			// Test 4: Format code
+			console.log('\n4. Testing format()...');
+			const messyCode = `package main
+import "fmt"
+func main(){
+fmt.Println("Unformatted code")
+}`;
+			const formatResponse = await this.client.format(messyCode, true);
+			if (formatResponse.Error) {
+				console.error('Format error:', formatResponse.Error);
+			} else {
+				console.log('Formatted code:', formatResponse.Body);
+			}
+
+			// Test 5: Health check
+			console.log('\n5. Testing health()...');
+			const health = await this.client.health();
+			console.log('Health status:', health);
+
+			// Test 6: Version
+			console.log('\n6. Testing version()...');
+			const version = await this.client.version();
+			console.log('Go version:', version);
+
+			console.log('\n=== All tests completed ===');
+		} catch (error) {
+			console.error('Go Playground test failed:', error);
+		}
 	}
 }
 
@@ -100,4 +198,10 @@ class SampleModal extends Modal {
 		const {contentEl} = this;
 		contentEl.empty();
 	}
+}
+
+async function testGet() {
+  const resp = await fetch("https://httpbin.org/get");
+  const data = await resp.json();
+  console.log(data);
 }

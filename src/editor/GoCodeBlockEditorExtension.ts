@@ -106,7 +106,7 @@ class ToolbarWidget extends WidgetType {
 
 		const formatButton = document.createElement("button");
 		formatButton.type = "button";
-		formatButton.textContent = "格式化";
+		formatButton.textContent = "Format";
 		formatButton.className = "go-playground-button";
 		formatButton.addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -116,7 +116,7 @@ class ToolbarWidget extends WidgetType {
 
 		const runButton = document.createElement("button");
 		runButton.type = "button";
-		runButton.textContent = "运行";
+		runButton.textContent = "Run";
 		runButton.className = "go-playground-button";
 		runButton.addEventListener("click", async (event) => {
 			event.preventDefault();
@@ -147,7 +147,7 @@ class ToolbarWidget extends WidgetType {
 				languageSet
 			);
 			if (!block) {
-				new Notice("未找到可格式化的 Go 代码块。");
+				new Notice("No formattable Go code block found.");
 				return;
 			}
 
@@ -166,7 +166,7 @@ class ToolbarWidget extends WidgetType {
 			updateCodeBlockLines(lines, block, response.Body);
 			replaceEditorContent(view, lines.join("\n"));
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "格式化失败。";
+			const message = error instanceof Error ? error.message : "Format failed.";
 			new Notice(message);
 		} finally {
 			button.disabled = false;
@@ -191,7 +191,7 @@ class ToolbarWidget extends WidgetType {
 				languageSet
 			);
 			if (!block) {
-				new Notice("未找到可运行的 Go 代码块。");
+				new Notice("No runnable Go code block found.");
 				return;
 			}
 
@@ -209,7 +209,7 @@ class ToolbarWidget extends WidgetType {
 			);
 			replaceEditorContent(view, lines.join("\n"));
 		} catch (error) {
-			const message = error instanceof Error ? error.message : "运行失败。";
+			const message = error instanceof Error ? error.message : "Run failed.";
 			new Notice(message);
 		} finally {
 			button.disabled = false;

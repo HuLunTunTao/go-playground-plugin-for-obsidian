@@ -144,9 +144,9 @@ export class GoCodeBlockProcessor {
 
 		button.disabled = true;
 		const previewLeaf = this.getMarkdownLeafForPath(filePath);
-		const wasPreview = previewLeaf?.view.getMode() === "preview";
+		const wasPreview = previewLeaf && (previewLeaf.view as MarkdownView).getMode() === "preview";
 		const previewScroll = wasPreview
-			? previewLeaf?.view.previewMode.getScroll()
+			? (previewLeaf.view as MarkdownView).previewMode.getScroll()
 			: null;
 		try {
 			const content = await this.app.vault.read(file);
@@ -180,11 +180,11 @@ export class GoCodeBlockProcessor {
 
 			updateCodeBlockLines(lines, block, response.Body);
 			await this.app.vault.modify(file, lines.join("\n"));
-			if (wasPreview) {
-				previewLeaf?.view.previewMode.rerender();
+			if (wasPreview && previewLeaf) {
+				(previewLeaf.view as MarkdownView).previewMode.rerender();
 				if (previewScroll !== null && previewScroll !== undefined) {
 					requestAnimationFrame(() =>
-						previewLeaf?.view.previewMode.applyScroll(previewScroll)
+						(previewLeaf.view as MarkdownView).previewMode.applyScroll(previewScroll)
 					);
 				}
 			}
@@ -210,9 +210,9 @@ export class GoCodeBlockProcessor {
 
 		button.disabled = true;
 		const previewLeaf = this.getMarkdownLeafForPath(filePath);
-		const wasPreview = previewLeaf?.view.getMode() === "preview";
+		const wasPreview = previewLeaf && (previewLeaf.view as MarkdownView).getMode() === "preview";
 		const previewScroll = wasPreview
-			? previewLeaf?.view.previewMode.getScroll()
+			? (previewLeaf.view as MarkdownView).previewMode.getScroll()
 			: null;
 		try {
 			const content = await this.app.vault.read(file);
@@ -245,11 +245,11 @@ export class GoCodeBlockProcessor {
 				settings.runResultLanguage
 			);
 			await this.app.vault.modify(file, lines.join("\n"));
-			if (wasPreview) {
-				previewLeaf?.view.previewMode.rerender();
+			if (wasPreview && previewLeaf) {
+				(previewLeaf.view as MarkdownView).previewMode.rerender();
 				if (previewScroll !== null && previewScroll !== undefined) {
 					requestAnimationFrame(() =>
-						previewLeaf?.view.previewMode.applyScroll(previewScroll)
+						(previewLeaf.view as MarkdownView).previewMode.applyScroll(previewScroll)
 					);
 				}
 			}

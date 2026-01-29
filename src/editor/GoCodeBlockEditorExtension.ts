@@ -1,6 +1,6 @@
 import { Notice } from "obsidian";
 import { RangeSetBuilder } from "@codemirror/state";
-import { Decoration, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
+import { Decoration, DecorationSet, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
 import { MyPluginSettings } from "../settings";
 import {
@@ -19,7 +19,7 @@ export function createGoCodeBlockEditorExtension(
 ) {
 	return ViewPlugin.fromClass(
 		class {
-			decorations: Decoration.Set;
+			decorations: DecorationSet;
 
 			constructor(view: EditorView) {
 				view.dom.classList.add("go-playground-editor");
@@ -42,7 +42,7 @@ function buildDecorations(
 	view: EditorView,
 	client: GoPlaygroundClient,
 	getSettings: SettingsGetter
-): Decoration.Set {
+): DecorationSet {
 	const settings = getSettings();
 	const languageSet = new Set(
 		settings.codeBlockLanguages.map((lang) => normalizeLanguage(lang))

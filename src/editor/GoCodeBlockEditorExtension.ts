@@ -14,7 +14,7 @@ import {
 
 type SettingsGetter = () => MyPluginSettings;
 
-const EDITOR_TOOLBAR_TOP_OFFSET = 2;
+const EDITOR_TOOLBAR_TOP_OFFSET = 4;
 
 export function createGoCodeBlockEditorExtension(
 	client: GoPlaygroundClient,

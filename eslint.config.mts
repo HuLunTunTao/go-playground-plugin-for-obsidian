@@ -1,7 +1,6 @@
 import tseslint from 'typescript-eslint';
 import obsidianmd from "eslint-plugin-obsidianmd";
 import globals from "globals";
-import { globalIgnores } from "eslint/config";
 
 export default tseslint.config(
 	{
@@ -21,14 +20,30 @@ export default tseslint.config(
 			},
 		},
 	},
-	...obsidianmd.configs.recommended,
-	globalIgnores([
-		"node_modules",
-		"dist",
-		"esbuild.config.mjs",
-		"eslint.config.js",
-		"version-bump.mjs",
-		"versions.json",
-		"main.js",
-	]),
+	...obsidianmd.configs.recommendedWithLocalesEn,
+	{
+		plugins: {
+			obsidianmd,
+		},
+		rules: {
+			"obsidianmd/ui/sentence-case-locale-module": [
+				"warn",
+				{
+					brands: ["Go", "Go Playground", "Golang"],
+					acronyms: ["URL", "ID"],
+				}
+			]
+		}
+	},
+	{
+		ignores: [
+			"node_modules",
+			"dist",
+			"esbuild.config.mjs",
+			"eslint.config.js",
+			"version-bump.mjs",
+			"versions.json",
+			"main.js",
+		]
+	}
 );

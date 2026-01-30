@@ -15,7 +15,7 @@ export default {
 	SETTING_URL_NAME: "Go Playground base URL",
 	SETTING_URL_DESC: "Base URL for Go Playground.",
 	SETTING_LANGS_NAME: "Code block languages",
-	SETTING_LANGS_DESC: "Comma-separated list. Case-insensitive. Example: go, golang.",
+	SETTING_LANGS_DESC: "Comma-separated list. Case-insensitive. Example: Go, Golang.",
 	SETTING_RESULT_LANG_NAME: "Language identifier for result code block",
 	SETTING_RESULT_LANG_DESC: "The language identifier used for the code block that displays the execution result below the Go code block. Do not modify this unless you know what you are doing. A restart or plugin reload is required after changing this value.",
 	SETTING_FIX_IMPORTS_NAME: "Format: fix imports",

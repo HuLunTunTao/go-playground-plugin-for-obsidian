@@ -1,6 +1,6 @@
 {
 	"name": "go-playground-plugin",
-	"version": "1.0.0",
+	"version": "1.0.2",
 	"description": "Run, format, and share Golang code snippets using the Go Playground API.",
 	"main": "main.js",
 	"type": "module",
@@ -11,7 +11,7 @@
 		"lint": "eslint ."
 	},
 	"keywords": [],
-	"license": "0-BSD",
+	"license": "GPLv3",
 	"devDependencies": {
 		"@types/node": "^16.11.6",
 		"esbuild": "0.25.5",

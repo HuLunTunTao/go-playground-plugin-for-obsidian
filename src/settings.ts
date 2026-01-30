@@ -4,7 +4,6 @@ import { t } from "./i18n";
 
 export interface MyPluginSettings {
 	go_playground_base_url: string;
-	go_playground_timeout: number;
 	codeBlockLanguages: string[];
 	runResultLanguage: string;
 	formatFixImports: boolean;
@@ -12,7 +11,6 @@ export interface MyPluginSettings {
 
 export const DEFAULT_SETTINGS: MyPluginSettings = {
 	go_playground_base_url: "https://play.golang.org",
-	go_playground_timeout: 10000,
 	codeBlockLanguages: ["go", "golang"],
 	runResultLanguage: "golang-run-result",
 	formatFixImports: true,
@@ -43,23 +41,6 @@ export class SampleSettingTab extends PluginSettingTab {
 						await this.plugin.saveSettings();
 					})
 			);
-		
-		// During the limitation of Obsidian API, we temporarily disable this setting.
-		// new Setting(containerEl)
-		// 	.setName(t("SETTING_TIMEOUT_NAME"))
-		// 	.setDesc(t("SETTING_TIMEOUT_DESC"))
-		// 	.addText((text) =>
-		// 		text
-		// 			.setPlaceholder("10000")
-		// 			.setValue(String(this.plugin.settings.go_playground_timeout))
-		// 			.onChange(async (value) => {
-		// 				const timeout = Number.parseInt(value, 10);
-		// 				if (!Number.isNaN(timeout) && timeout > 0) {
-		// 					this.plugin.settings.go_playground_timeout = timeout;
-		// 					await this.plugin.saveSettings();
-		// 				}
-		// 			})
-		// 	);
 
 		new Setting(containerEl)
 			.setName(t("SETTING_LANGS_NAME"))

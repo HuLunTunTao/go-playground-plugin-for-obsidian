@@ -12,8 +12,6 @@ export default {
 	MENU_INSERT_SNIPPET: "插入 Go Playground 程式碼片段",
 	SETTING_URL_NAME: "Go Playground 基礎 URL",
 	SETTING_URL_DESC: "Go Playground 的 API 基礎位址。",
-	SETTING_TIMEOUT_NAME: "請求超時",
-	SETTING_TIMEOUT_DESC: "請求的最大等待時間（毫秒）。",
 	SETTING_LANGS_NAME: "程式碼區塊語言",
 	SETTING_LANGS_DESC: "逗號分隔的列表。不區分大小寫。例如：go, golang。",
 	SETTING_RESULT_LANG_NAME: "執行結果程式碼區塊的語言識別符",

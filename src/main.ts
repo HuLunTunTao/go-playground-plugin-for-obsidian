@@ -17,8 +17,7 @@ export default class GoPlaygroundPlugin extends Plugin {
 		await this.loadSettings();
 
 		this.client = new GoPlaygroundClient(
-			this.settings.go_playground_base_url,
-			this.settings.go_playground_timeout
+			this.settings.go_playground_base_url
 		);
 
 		this.processor = new GoCodeBlockProcessor(
@@ -68,8 +67,7 @@ export default class GoPlaygroundPlugin extends Plugin {
 	async saveSettings() {
 		await this.saveData(this.settings);
 		this.client.updateConfig(
-			this.settings.go_playground_base_url,
-			this.settings.go_playground_timeout
+			this.settings.go_playground_base_url
 		);
 	}
 

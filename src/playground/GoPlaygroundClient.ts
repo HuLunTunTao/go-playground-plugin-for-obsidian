@@ -32,16 +32,13 @@ export interface GoPlaygroundVersionResponse {
 
 export class GoPlaygroundClient {
 	private baseUrl: string;
-	private timeout: number;
 
-	constructor(baseUrl: string, timeout: number = 10000) {
+	constructor(baseUrl: string) {
 		this.baseUrl = baseUrl.replace(/\/$/, ''); // Remove trailing slash
-		this.timeout = timeout;
 	}
 
-	updateConfig(baseUrl: string, timeout: number): void {
+	updateConfig(baseUrl: string): void {
 		this.baseUrl = baseUrl.replace(/\/$/, "");
-		this.timeout = timeout;
 	}
 
 	getShareUrl(snippetId: string): string {

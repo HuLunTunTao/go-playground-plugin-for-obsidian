@@ -81,7 +81,7 @@ export class GoPlaygroundClient {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 
-			const data: GoPlaygroundResponse = response.json;
+			const data = response.json as GoPlaygroundResponse;
 			return data;
 		} catch (error) {
 			if (error instanceof Error) {
@@ -147,7 +147,7 @@ export class GoPlaygroundClient {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 
-			const data: GoPlaygroundFormatResponse = response.json;
+			const data = response.json as GoPlaygroundFormatResponse;
 			return data;
 		} catch (error) {
 			if (error instanceof Error) {
@@ -198,7 +198,7 @@ export class GoPlaygroundClient {
 				throw new Error(`HTTP error! status: ${response.status}`);
 			}
 
-			const data: GoPlaygroundVersionResponse = response.json;
+			const data = response.json as GoPlaygroundVersionResponse;
 			return data;
 		} catch (error) {
 			if (error instanceof Error) {

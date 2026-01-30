@@ -8,7 +8,7 @@ import {
 	setIcon,
 } from "obsidian";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
-import { MyPluginSettings } from "../settings";
+import { GoPlaygroundSettings } from "../settings";
 import {
 	buildFencedCodeBlockText,
 	findCodeBlockByLineRange,
@@ -18,7 +18,7 @@ import {
 } from "../utils/markdown";
 import { t } from "../i18n";
 
-type SettingsGetter = () => MyPluginSettings;
+type SettingsGetter = () => GoPlaygroundSettings;
 
 export class GoCodeBlockProcessor {
 	private app: App;
@@ -98,10 +98,10 @@ export class GoCodeBlockProcessor {
 
 			if (nativeLabel && nativeLabel.dataset.goPlaygroundCopy !== "true") {
 				nativeLabel.dataset.goPlaygroundCopy = "true";
-				nativeLabel.addEventListener("click", async (event) => {
+				nativeLabel.addEventListener("click", (event) => {
 					event.preventDefault();
 					event.stopPropagation();
-					await this.handleCopy(ctx.sourcePath, section.lineStart, section.lineEnd);
+					void this.handleCopy(ctx.sourcePath, section.lineStart, section.lineEnd);
 				});
 			}
 
@@ -130,10 +130,10 @@ export class GoCodeBlockProcessor {
 		formatButton.className = "go-playground-button mod-format";
 		setIcon(formatButton, "code-2");
 		formatButton.insertAdjacentText("beforeend", t("BUTTON_FORMAT"));
-		formatButton.addEventListener("click", async (event) => {
+		formatButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			await this.handleFormat(filePath, lineStart, lineEnd, formatButton);
+			void this.handleFormat(filePath, lineStart, lineEnd, formatButton);
 		});
 
 		const runButton = document.createElement("button");
@@ -141,10 +141,10 @@ export class GoCodeBlockProcessor {
 		runButton.className = "go-playground-button mod-run";
 		setIcon(runButton, "play");
 		runButton.insertAdjacentText("beforeend", t("BUTTON_RUN"));
-		runButton.addEventListener("click", async (event) => {
+		runButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			await this.handleRun(filePath, lineStart, lineEnd, runButton);
+			void this.handleRun(filePath, lineStart, lineEnd, runButton);
 		});
 
 		const shareButton = document.createElement("button");
@@ -152,10 +152,10 @@ export class GoCodeBlockProcessor {
 		shareButton.className = "go-playground-button mod-share";
 		setIcon(shareButton, "share-2");
 		shareButton.insertAdjacentText("beforeend", t("BUTTON_SHARE"));
-		shareButton.addEventListener("click", async (event) => {
+		shareButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			await this.handleShare(filePath, lineStart, lineEnd, shareButton);
+			void this.handleShare(filePath, lineStart, lineEnd, shareButton);
 		});
 
 		toolbar.appendChild(formatButton);
@@ -196,7 +196,7 @@ export class GoCodeBlockProcessor {
 				languageSet
 			);
 			if (!block) {
-				new Notice("No formattable Go code block found.");
+				new Notice(t("NOTICE_NO_FORMATTABLE_BLOCK"));
 				return;
 			}
 
@@ -262,7 +262,7 @@ export class GoCodeBlockProcessor {
 				languageSet
 			);
 			if (!block) {
-				new Notice("No runnable Go code block found.");
+				new Notice(t("NOTICE_NO_RUNNABLE_BLOCK"));
 				return;
 			}
 
@@ -322,7 +322,7 @@ export class GoCodeBlockProcessor {
 				languageSet
 			);
 			if (!block) {
-				new Notice("Cannot find a Go code block to share.");
+				new Notice(t("NOTICE_NO_SHAREABLE_BLOCK"));
 				return;
 			}
 
@@ -366,13 +366,13 @@ export class GoCodeBlockProcessor {
 				languageSet
 			);
 			if (!block) {
-				new Notice("Cannot find a Go code block to copy.");
+				new Notice(t("NOTICE_NO_COPYABLE_BLOCK"));
 				return;
 			}
 
 			const blockText = buildFencedCodeBlockText(lines, block);
 			await copyToClipboard(blockText);
-			new Notice("Code block copied.");
+			new Notice(t("NOTICE_COPY_SUCCESS"));
 		} catch (error) {
 			const message = error instanceof Error ? error.message : "Copy failed.";
 			new Notice(message);
@@ -410,13 +410,22 @@ async function copyToClipboard(text: string): Promise<void> {
 	}
 	const textarea = document.createElement("textarea");
 	textarea.value = text;
-	textarea.style.position = "fixed";
-	textarea.style.opacity = "0";
+	textarea.setCssProps({
+		position: "fixed",
+		opacity: "0",
+	});
 	document.body.appendChild(textarea);
 	textarea.focus();
 	textarea.select();
-	document.execCommand("copy");
-	document.body.removeChild(textarea);
+	try {
+		if (navigator.clipboard) {
+			await navigator.clipboard.writeText(text);
+		}
+	} catch {
+		// Fallback is not available in modern browsers
+	} finally {
+		document.body.removeChild(textarea);
+	}
 }
 
 function findNativeLanguageLabel(container: HTMLElement): HTMLElement | null {

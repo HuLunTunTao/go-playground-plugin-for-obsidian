@@ -2,21 +2,21 @@ import { App, PluginSettingTab, Setting } from "obsidian";
 import MyPlugin from "./main";
 import { t } from "./i18n";
 
-export interface MyPluginSettings {
+export interface GoPlaygroundSettings {
 	go_playground_base_url: string;
 	codeBlockLanguages: string[];
 	runResultLanguage: string;
 	formatFixImports: boolean;
 }
 
-export const DEFAULT_SETTINGS: MyPluginSettings = {
+export const DEFAULT_SETTINGS: GoPlaygroundSettings = {
 	go_playground_base_url: "https://play.golang.org",
 	codeBlockLanguages: ["go", "golang"],
 	runResultLanguage: "golang-run-result",
 	formatFixImports: true,
 };
 
-export class SampleSettingTab extends PluginSettingTab {
+export class GoPlaygroundSettingTab extends PluginSettingTab {
 	plugin: MyPlugin;
 
 	constructor(app: App, plugin: MyPlugin) {
@@ -47,7 +47,7 @@ export class SampleSettingTab extends PluginSettingTab {
 			.setDesc(t("SETTING_LANGS_DESC"))
 			.addText((text) =>
 				text
-					.setPlaceholder("go, golang")
+					.setPlaceholder("Go, golang")
 					.setValue(this.plugin.settings.codeBlockLanguages.join(", "))
 					.onChange(async (value) => {
 						this.plugin.settings.codeBlockLanguages = value
@@ -63,7 +63,7 @@ export class SampleSettingTab extends PluginSettingTab {
 			.setDesc(t("SETTING_RESULT_LANG_DESC"))
 			.addText((text) =>
 				text
-					.setPlaceholder("golang-run-result")
+					.setPlaceholder("Golang-run-result")
 					.setValue(this.plugin.settings.runResultLanguage)
 					.onChange(async (value) => {
 						this.plugin.settings.runResultLanguage = value.trim();

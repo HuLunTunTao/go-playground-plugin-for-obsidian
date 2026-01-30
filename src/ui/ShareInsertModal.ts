@@ -1,9 +1,9 @@
 import { App, Editor, Modal, Notice } from "obsidian";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
-import { MyPluginSettings } from "../settings";
+import { GoPlaygroundSettings } from "../settings";
 import { t } from "../i18n";
 
-type SettingsGetter = () => MyPluginSettings;
+type SettingsGetter = () => GoPlaygroundSettings;
 
 export class ShareInsertModal extends Modal {
 	private editor: Editor;
@@ -80,7 +80,7 @@ export class ShareInsertModal extends Modal {
 			}
 		};
 
-		submitButton.addEventListener("click", handleSubmit);
+		submitButton.addEventListener("click", () => void handleSubmit());
 		cancelButton.addEventListener("click", () => this.close());
 		input.addEventListener("keydown", (event) => {
 			if (event.key === "Enter") {

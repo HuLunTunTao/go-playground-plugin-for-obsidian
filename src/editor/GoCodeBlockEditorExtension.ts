@@ -2,7 +2,7 @@ import { Notice, setIcon } from "obsidian";
 import { RangeSetBuilder } from "@codemirror/state";
 import { Decoration, DecorationSet, EditorView, ViewPlugin, WidgetType } from "@codemirror/view";
 import { GoPlaygroundClient } from "../playground/GoPlaygroundClient";
-import { MyPluginSettings } from "../settings";
+import { GoPlaygroundSettings } from "../settings";
 import { t } from "../i18n";
 import {
 	findCodeBlockByLineRange,
@@ -12,7 +12,7 @@ import {
 	upsertRunResultBlockLines,
 } from "../utils/markdown";
 
-type SettingsGetter = () => MyPluginSettings;
+type SettingsGetter = () => GoPlaygroundSettings;
 
 const EDITOR_TOOLBAR_TOP_OFFSET = 4;
 
@@ -118,10 +118,10 @@ class ToolbarWidget extends WidgetType {
 		formatButton.className = "go-playground-button mod-format";
 		setIcon(formatButton, "code-2");
 		formatButton.insertAdjacentText("beforeend", t("BUTTON_FORMAT"));
-		formatButton.addEventListener("click", async (event) => {
+		formatButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			await this.handleFormat(view, formatButton);
+			void this.handleFormat(view, formatButton);
 		});
 
 		const runButton = document.createElement("button");
@@ -129,10 +129,10 @@ class ToolbarWidget extends WidgetType {
 		runButton.className = "go-playground-button mod-run";
 		setIcon(runButton, "play");
 		runButton.insertAdjacentText("beforeend", t("BUTTON_RUN"));
-		runButton.addEventListener("click", async (event) => {
+		runButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			await this.handleRun(view, runButton);
+			void this.handleRun(view, runButton);
 		});
 
 		const shareButton = document.createElement("button");
@@ -140,10 +140,10 @@ class ToolbarWidget extends WidgetType {
 		shareButton.className = "go-playground-button mod-share";
 		setIcon(shareButton, "share-2");
 		shareButton.insertAdjacentText("beforeend", t("BUTTON_SHARE"));
-		shareButton.addEventListener("click", async (event) => {
+		shareButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			await this.handleShare(view, shareButton);
+			void this.handleShare(view, shareButton);
 		});
 
 		toolbar.appendChild(formatButton);
@@ -151,20 +151,20 @@ class ToolbarWidget extends WidgetType {
 		toolbar.appendChild(shareButton);
 		requestAnimationFrame(() => {
 			updateEditorToolbarOffset(toolbar, view);
-			const lineEl = toolbar.closest(".cm-line") as HTMLElement | null;
+			const lineEl = toolbar.closest<HTMLElement>(".cm-line");
 			if (!lineEl) return;
-			this.offsetObserver = new MutationObserver(() =>
-				updateEditorToolbarOffset(toolbar, view)
-			);
+			this.offsetObserver = new MutationObserver(() => {
+				updateEditorToolbarOffset(toolbar, view);
+			});
 			this.offsetObserver.observe(lineEl, {
 				childList: true,
 				subtree: true,
 				attributes: true,
 			});
 			if (typeof ResizeObserver !== "undefined") {
-				this.offsetResizeObserver = new ResizeObserver(() =>
-					updateEditorToolbarOffset(toolbar, view)
-				);
+				this.offsetResizeObserver = new ResizeObserver(() => {
+					updateEditorToolbarOffset(toolbar, view);
+				});
 				this.offsetResizeObserver.observe(lineEl);
 			}
 		});
@@ -328,19 +328,28 @@ async function copyToClipboard(text: string): Promise<void> {
 	}
 	const textarea = document.createElement("textarea");
 	textarea.value = text;
-	textarea.style.position = "fixed";
-	textarea.style.opacity = "0";
+	textarea.setCssProps({
+		position: "fixed",
+		opacity: "0",
+	});
 	document.body.appendChild(textarea);
 	textarea.focus();
 	textarea.select();
-	document.execCommand("copy");
-	document.body.removeChild(textarea);
+	try {
+		if (navigator.clipboard) {
+			await navigator.clipboard.writeText(text);
+		}
+	} catch {
+		// Fallback is not available in modern browsers
+	} finally {
+		document.body.removeChild(textarea);
+	}
 }
 
 function updateEditorToolbarOffset(toolbar: HTMLElement, view: EditorView): void {
 	const baseRight = 8;
 	const gap = 6;
-	const lineEl = toolbar.closest(".cm-line") as HTMLElement | null;
+	const lineEl = toolbar.closest<HTMLElement>(".cm-line");
 	const candidates = lineEl
 		? lineEl.querySelectorAll<HTMLElement>(
 				".code-block-flair, .code-block-language, .cm-codeblock-language, button[data-language]"

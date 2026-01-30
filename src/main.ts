@@ -1,5 +1,5 @@
 import { Notice, Plugin } from "obsidian";
-import { DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab } from "./settings";
+import { DEFAULT_SETTINGS, GoPlaygroundSettings, GoPlaygroundSettingTab } from "./settings";
 import { GoPlaygroundClient } from "./playground/GoPlaygroundClient";
 import { GoCodeBlockProcessor } from "./ui/GoCodeBlockProcessor";
 import { createGoCodeBlockEditorExtension } from "./editor/GoCodeBlockEditorExtension";
@@ -7,7 +7,7 @@ import { ShareInsertModal } from "./ui/ShareInsertModal";
 import { t } from "./i18n";
 
 export default class GoPlaygroundPlugin extends Plugin {
-	settings: MyPluginSettings;
+	settings: GoPlaygroundSettings;
 	client: GoPlaygroundClient;
 	processor: GoCodeBlockProcessor;
 	private insertLock = false;
@@ -52,7 +52,7 @@ export default class GoPlaygroundPlugin extends Plugin {
 			})
 		);
 
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new GoPlaygroundSettingTab(this.app, this));
 
 	}
 
@@ -60,7 +60,7 @@ export default class GoPlaygroundPlugin extends Plugin {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			(await this.loadData()) as Partial<MyPluginSettings>
+			(await this.loadData()) as Partial<GoPlaygroundSettings>
 		);
 	}
 

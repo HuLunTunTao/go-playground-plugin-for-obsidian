@@ -3,7 +3,7 @@
 	"name": "Go Playground Plugin",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "A plugin to run, format, and share Golang code snippets using the Go Playground API.",
+	"description": "Run, format, and share Golang code snippets using the Go Playground API.",
 	"author": "HuLunTunTao",
 	"authorUrl": "https://github.com/HuLunTunTao",
 	"isDesktopOnly": false

@@ -143,6 +143,6 @@ export function upsertRunResultBlockLines(
 	lines.splice(insertPos, 0, ...insertLines);
 }
 
-function sanitizeResult(result: string): string {
+export function sanitizeResult(result: string): string {
 	return result.replace(/\r\n/g, "\n").replace(/```/g, "``\\`");
 }

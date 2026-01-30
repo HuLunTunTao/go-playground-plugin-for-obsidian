@@ -1,6 +1,6 @@
 # Go Playground for Obsidian
 
-Run and share Go code directly in Obsidian.
+Run, format, and share Golang code snippets using the Go Playground API.
 
 在 Obsidian 中直接运行和分享 Go 代码。
 

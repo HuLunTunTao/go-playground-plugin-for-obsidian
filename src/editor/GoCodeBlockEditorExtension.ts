@@ -8,8 +8,9 @@ import {
 	findCodeBlockByLineRange,
 	findCodeBlocksByLineRange,
 	normalizeLanguage,
-	updateCodeBlockLines,
-	upsertRunResultBlockLines,
+	sanitizeResult,
+	isFenceLine,
+	getFenceLanguage,
 } from "../utils/markdown";
 
 type SettingsGetter = () => GoPlaygroundSettings;
@@ -117,7 +118,7 @@ class ToolbarWidget extends WidgetType {
 		formatButton.type = "button";
 		formatButton.className = "go-playground-button mod-format";
 		setIcon(formatButton, "code-2");
-		formatButton.insertAdjacentText("beforeend", t("BUTTON_FORMAT"));
+		formatButton.createSpan({ text: t("BUTTON_FORMAT") });
 		formatButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -128,7 +129,7 @@ class ToolbarWidget extends WidgetType {
 		runButton.type = "button";
 		runButton.className = "go-playground-button mod-run";
 		setIcon(runButton, "play");
-		runButton.insertAdjacentText("beforeend", t("BUTTON_RUN"));
+		runButton.createSpan({ text: t("BUTTON_RUN") });
 		runButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -139,7 +140,7 @@ class ToolbarWidget extends WidgetType {
 		shareButton.type = "button";
 		shareButton.className = "go-playground-button mod-share";
 		setIcon(shareButton, "share-2");
-		shareButton.insertAdjacentText("beforeend", t("BUTTON_SHARE"));
+		shareButton.createSpan({ text: t("BUTTON_SHARE") });
 		shareButton.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
@@ -205,8 +206,51 @@ class ToolbarWidget extends WidgetType {
 				return;
 			}
 
-			updateCodeBlockLines(lines, block, response.Body);
-			replaceEditorContent(view, lines.join("\n"));
+			// Normalized Body. Logic adapted to minimize disturbance.
+			const normalizedBody = response.Body.replace(/\r\n/g, "\n");
+			
+			// Range Calculation for Replacement
+			// block.codeStartLine (index in lines) -> First line of code.
+			// block.codeEndLine (index in lines) -> Closing fence line (exclusive of code).
+			
+			// We want to replace lines from `block.codeStartLine` to `block.codeEndLine - 1`.
+			// Wait, block.codeEndLine is the index of the closing fence line in the lines array.
+			// But slice is exclusive.
+			// If array: 0: ```, 1: code, 2: ```.
+			// codeStartLine = 1. codeEndLine = 2.
+			// We want to replace line 1.
+			
+			// CM6 Line numbering: 1-based.
+			// Start Line for replacement: block.codeStartLine + 1.
+			// End Line for replacement: block.codeEndLine - 1 + 1 (since block.codeEndLine is exclusive index, -1 gives last code line index, +1 for CM6).
+			// => block.codeEndLine.
+			
+			const fromLineNumber = block.codeStartLine + 1;
+			const toLineNumber = block.codeEndLine;
+			
+			let fromPos: number;
+			let toPos: number;
+			
+			if (fromLineNumber > toLineNumber) {
+				// Empty block
+				// Insert at end of opening fence line? Or start of closing fence line?
+				// Opening fence is at block.startLine (0-based) => block.startLine + 1 (1-based).
+				const openingFenceLine = view.state.doc.line(block.startLine + 1);
+				fromPos = openingFenceLine.to + 1; // Start of next line (if exists)
+				toPos = fromPos;
+			} else {
+				fromPos = view.state.doc.line(fromLineNumber).from;
+				toPos = view.state.doc.line(toLineNumber).to;
+			}
+			
+			view.dispatch({
+				changes: {
+					from: fromPos,
+					to: toPos,
+					insert: normalizedBody
+				}
+			});
+
 		} catch (error) {
 			const message = error instanceof Error ? error.message : t("ERROR_FORMAT_FAILED");
 			new Notice(message);
@@ -242,14 +286,80 @@ class ToolbarWidget extends WidgetType {
 				.join("\n");
 			const response = await this.client.compile(code, false);
 			const output = this.client.getOutput(response);
+			const runResultLanguage = settings.runResultLanguage;
 
-			upsertRunResultBlockLines(
-				lines,
-				block,
-				output,
-				settings.runResultLanguage
-			);
-			replaceEditorContent(view, lines.join("\n"));
+			const normalizedResult = sanitizeResult(output);
+			const resultLines =
+				normalizedResult.length > 0 ? normalizedResult.split("\n") : [];
+			const resultLanguage = normalizeLanguage(runResultLanguage);
+
+			// Scan for existing result block
+			let scanLineIndex = block.endLine + 1;
+			while (scanLineIndex < lines.length && lines[scanLineIndex]?.trim() === "") {
+				scanLineIndex++;
+			}
+
+			let existingBlockStart = -1;
+			let existingBlockEnd = -1; // Exclusive index
+
+			if (
+				scanLineIndex < lines.length &&
+				isFenceLine(lines[scanLineIndex]) &&
+				normalizeLanguage(getFenceLanguage(lines[scanLineIndex])) === resultLanguage
+			) {
+				existingBlockStart = scanLineIndex;
+				let endFence = scanLineIndex + 1;
+				while (endFence < lines.length && !isFenceLine(lines[endFence])) {
+					endFence++;
+				}
+				if (endFence < lines.length) {
+					existingBlockEnd = endFence + 1; // Include closing fence in range? Yes.
+				} else {
+					existingBlockEnd = lines.length;
+				}
+			}
+
+			const newBlockContent =
+				`\`\`\`${runResultLanguage}\n` +
+				(resultLines.length > 0 ? resultLines.join("\n") + "\n" : "") +
+				"```";
+
+			if (existingBlockStart !== -1) {
+				// Replace existing block
+				// Range: existingBlockStart to existingBlockEnd - 1 (indices)
+				// CM6: existingBlockStart + 1 to existingBlockEnd
+				
+				const fromLine = view.state.doc.line(existingBlockStart + 1);
+				// To line: if existingBlockEnd is length, it means last line inclusive?
+				// existingBlockEnd is exclusive index.
+				// Last line index = existingBlockEnd - 1.
+				// CM6 line = existingBlockEnd.
+				
+				let toPos: number;
+				if (existingBlockEnd <= view.state.doc.lines) {
+					toPos = view.state.doc.line(existingBlockEnd).to;
+				} else {
+					toPos = view.state.doc.length; // Should match
+				}
+				
+				view.dispatch({
+					changes: {
+						from: fromLine.from,
+						to: toPos,
+						insert: newBlockContent
+					}
+				});
+			} else {
+				// Insert new block
+				const closingFenceLine = view.state.doc.line(block.endLine + 1);
+				view.dispatch({
+					changes: {
+						from: closingFenceLine.to,
+						insert: "\n\n" + newBlockContent
+					}
+				});
+			}
+
 		} catch (error) {
 			const message = error instanceof Error ? error.message : t("ERROR_RUN_FAILED");
 			new Notice(message);
@@ -303,22 +413,6 @@ class ToolbarWidget extends WidgetType {
 		this.offsetObserver?.disconnect();
 		this.offsetResizeObserver?.disconnect();
 	}
-}
-
-function replaceEditorContent(view: EditorView, content: string): void {
-	const scrollTop = view.scrollDOM.scrollTop;
-	const scrollLeft = view.scrollDOM.scrollLeft;
-	view.dispatch({
-		changes: {
-			from: 0,
-			to: view.state.doc.length,
-			insert: content,
-		},
-	});
-	requestAnimationFrame(() => {
-		view.scrollDOM.scrollTop = scrollTop;
-		view.scrollDOM.scrollLeft = scrollLeft;
-	});
 }
 
 async function copyToClipboard(text: string): Promise<void> {

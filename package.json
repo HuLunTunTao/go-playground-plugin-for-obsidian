@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "go-playground-plugin",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Run, format, and share Golang code snippets using the Go Playground API.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {

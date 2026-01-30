@@ -1,5 +1,5 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import MyPlugin from "./main";
+import GoPlaygroundPlugin from "./main";
 import { t } from "./i18n";
 
 export interface GoPlaygroundSettings {
@@ -17,9 +17,9 @@ export const DEFAULT_SETTINGS: GoPlaygroundSettings = {
 };
 
 export class GoPlaygroundSettingTab extends PluginSettingTab {
-	plugin: MyPlugin;
+	plugin: GoPlaygroundPlugin;
 
-	constructor(app: App, plugin: MyPlugin) {
+	constructor(app: App, plugin: GoPlaygroundPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
 	}

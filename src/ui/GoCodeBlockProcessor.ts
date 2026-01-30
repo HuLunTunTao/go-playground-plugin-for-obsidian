@@ -212,8 +212,21 @@ export class GoCodeBlockProcessor {
 				return;
 			}
 
-			updateCodeBlockLines(lines, block, response.Body);
-			await this.app.vault.modify(file, lines.join("\n"));
+			await this.app.vault.process(file, (data) => {
+				const lines = data.split("\n");
+				const block = findCodeBlockByLineRange(
+					lines,
+					lineStart,
+					lineEnd,
+					languageSet
+				);
+				if (block) {
+					updateCodeBlockLines(lines, block, response.Body);
+					return lines.join("\n");
+				}
+				return data;
+			});
+
 			if (wasPreview && previewLeaf) {
 				(previewLeaf.view as MarkdownView).previewMode.rerender();
 				if (previewScroll !== null && previewScroll !== undefined) {
@@ -272,13 +285,26 @@ export class GoCodeBlockProcessor {
 			const response = await this.client.compile(code, false);
 			const output = this.client.getOutput(response);
 
-			upsertRunResultBlockLines(
-				lines,
-				block,
-				output,
-				settings.runResultLanguage
-			);
-			await this.app.vault.modify(file, lines.join("\n"));
+			await this.app.vault.process(file, (data) => {
+				const lines = data.split("\n");
+				const block = findCodeBlockByLineRange(
+					lines,
+					lineStart,
+					lineEnd,
+					languageSet
+				);
+				if (block) {
+					upsertRunResultBlockLines(
+						lines,
+						block,
+						output,
+						settings.runResultLanguage
+					);
+					return lines.join("\n");
+				}
+				return data;
+			});
+
 			if (wasPreview && previewLeaf) {
 				(previewLeaf.view as MarkdownView).previewMode.rerender();
 				if (previewScroll !== null && previewScroll !== undefined) {

@@ -12,4 +12,5 @@ export const t = (key: keyof typeof en): string => {
 	const locale = window.localStorage.getItem("language") || "en";
 	const strings = locales[locale.toLowerCase()] || en;
 	return strings[key] || en[key];
+	// return en[key];
 };

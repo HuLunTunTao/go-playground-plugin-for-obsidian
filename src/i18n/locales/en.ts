@@ -12,8 +12,6 @@ export default {
 	MENU_INSERT_SNIPPET: "Insert Go Playground snippet",
 	SETTING_URL_NAME: "Go Playground base URL",
 	SETTING_URL_DESC: "Base URL for Go Playground.",
-	SETTING_TIMEOUT_NAME: "Request timeout",
-	SETTING_TIMEOUT_DESC: "Maximum wait time in milliseconds.",
 	SETTING_LANGS_NAME: "Code block languages",
 	SETTING_LANGS_DESC: "Comma-separated list. Case-insensitive. Example: go, golang.",
 	SETTING_RESULT_LANG_NAME: "Language Identifier for Result Code Block",

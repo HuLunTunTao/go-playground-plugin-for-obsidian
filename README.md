@@ -116,4 +116,4 @@ Issues and pull requests are welcome.
 
 ## License / 许可证
 
-GPLv3
+MIT
